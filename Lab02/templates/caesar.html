@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Caesar Cipher</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mt-4">Caesar Cipher</h2>
+
+        <form method="POST" action="/caesar">
+            <div class="form-group">
+                <label>Plain Text / Cipher Text:</label>
+                <input type="text" class="form-control" name="text" placeholder="Enter text" value="{{ text }}">
+            </div>
+
+            <div class="form-group">
+                <label>Key:</label>
+                <input type="number" class="form-control" name="key" placeholder="Enter key" required value="{{ key }}">
+            </div>
+
+            <div class="text-center">
+                <button type="submit" name="action" value="encrypt" class="btn btn-primary">Encrypt</button>
+                <button type="submit" name="action" value="decrypt" class="btn btn-success">Decrypt</button>
+            </div>
+        </form>
+
+        {% if encrypted_text %}
+            <div class="mt-4">
+                <label>Encrypted Text:</label>
+                <input type="text" class="form-control" readonly value="{{ encrypted_text }}">
+            </div>
+        {% endif %}
+
+        {% if decrypted_text %}
+            <div class="mt-4">
+                <label>Decrypted Text:</label>
+                <input type="text" class="form-control" readonly value="{{ decrypted_text }}">
+            </div>
+        {% endif %}
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Quay lại trang chủ</a>
+        </div>
+    </div>
+</body>
+</html>
