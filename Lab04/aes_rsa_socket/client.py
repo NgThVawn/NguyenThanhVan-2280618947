@@ -4,7 +4,6 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 import socket
 import threading
-import hashlib
 
 # Initialize client socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,21 +42,45 @@ def decrypt_message(key, encrypted_message):
 # Function to receive messages from the server
 def receive_messages():
     while True:
-        encrypted_message = client_socket.recv(1024)
-        decrypted_message = decrypt_message(aes_key, encrypted_message)
-        print(f"Received: {decrypted_message}")
+        try:
+            encrypted_message = client_socket.recv(1024)
+
+            # Nếu nhận dữ liệu rỗng, client đóng kết nối -> thoát vòng lặp
+            if not encrypted_message:
+                print("Server disconnected. Exiting...")
+                break
+
+            decrypted_message = decrypt_message(aes_key, encrypted_message)
+            print(f"Received: {decrypted_message}")
+
+        except ConnectionAbortedError:
+            print("Connection was closed unexpectedly.")
+            break
+        except ConnectionResetError:
+            print("Connection reset by server.")
+            break
+        except Exception as e:
+            print(f"Error receiving message: {e}")
+            break
+
+    # Đóng socket khi kết thúc thread nhận tin nhắn
+    client_socket.close()
 
 # Start the receiving thread
-receive_thread = threading.Thread(target=receive_messages)
+receive_thread = threading.Thread(target=receive_messages, daemon=True)
 receive_thread.start()
 
 # Send messages from the client
-while True:
-    message = input("Enter message ('exit' to quit): ")
-    encrypted_message = encrypt_message(aes_key, message)
-    client_socket.send(encrypted_message)
-    if message == "exit":
-        break
+try:
+    while True:
+        message = input("Enter message ('exit' to quit): ")
+        encrypted_message = encrypt_message(aes_key, message)
+        client_socket.send(encrypted_message)
 
-# Close the connection when done
-client_socket.close()
+        if message.lower() == "exit":
+            print("Exiting chat...")
+            break
+except (BrokenPipeError, ConnectionResetError):
+    print("Connection closed by server.")
+finally:
+    client_socket.close()
